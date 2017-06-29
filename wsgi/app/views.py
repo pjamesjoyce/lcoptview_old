@@ -3,11 +3,157 @@ from app import app
 from flask import render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 from .lcoptview import *
+from collections import OrderedDict
 
 RUNNING_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 UPLOAD_FOLDER = os.environ.get('OPENSHIFT_DATA_DIR', os.path.join(RUNNING_DIRECTORY, 'data'))
 ALLOWED_EXTENSIONS = set(['lcopt'])
+
+TEST_FILE = os.path.join(UPLOAD_FOLDER, 'Cup_of_tea.lcoptview')
+
+
+def load_viewfile(filename):
+    return LcoptModelView(filename)
+
+
+def get_sandbox_variables(filename):
+
+    m = load_viewfile(filename)
+    db = m.database['items']
+    matrix = None #m.matrix
+    
+    def output_code(process_id):
+        
+        exchanges = m.database['items'][process_id]['exchanges']
+        
+        production_filter = lambda x: x['type'] == 'production'
+           
+        code = list(filter(production_filter, exchanges))[0]['input'][1]
+        
+        return code
+
+    sandbox_positions = m.sandbox_positions
+
+    products = OrderedDict((k, v) for k, v in db.items() if v['type'] == 'product')
+    product_codes = [k[1] for k in products.keys()]
+
+    processes = OrderedDict((k, v) for k, v in db.items() if v['type'] == 'process')
+    process_codes = [k[1] for k in processes.keys()]
+    process_name_map = {k[1]: v['name'] for k, v in processes.items()}
+
+    # note this maps from output code to process
+    process_output_map = {output_code(x): x[1] for x in processes.keys()}
+    reverse_process_output_map = {value: key for key, value in process_output_map.items()}
+
+    intermediates = {k: v for k, v in products.items() if v['lcopt_type'] == 'intermediate'}
+    intermediate_codes = [k[1] for k in intermediates.keys()]
+    intermediate_map = {k[1]: v['name'] for k, v in intermediates.items()}
+
+    #process_output_name_map = {process_code: output_name for x in processes.keys()}
+    process_output_name_map = {x[1]: intermediate_map[reverse_process_output_map[x[1]]] for x in processes.keys()}
+
+    inputs = OrderedDict((k, v) for k, v in products.items() if v['lcopt_type'] == 'input')
+    input_codes = [k[1] for k in inputs.keys()]
+    input_map = {k[1]: v['name'] for k, v in inputs.items()}
+    reverse_input_map = {value: key for key, value in input_map.items()}
+
+    biosphere = OrderedDict((k, v) for k, v in products.items() if v['lcopt_type'] == 'biosphere')
+    biosphere_codes = [k[1] for k in biosphere.keys()]
+    biosphere_map = {k[1]: v['name'] for k, v in biosphere.items()}
+    reverse_biosphere_map = {value: key for key, value in biosphere_map.items()}
+
+    #label_map = {**input_map, **process_output_name_map, **biosphere_map}
+    label_map = input_map.update(process_output_name_map)
+    print (label_map)
+
+    #print('label_map = {}\n'.format(label_map))
+    
+    outputlabels = [{'process_id': x, 'output_name': process_output_name_map[x]} for x in process_codes]
+    
+    link_indices = [process_output_map[x] if x in intermediate_codes else x for x in product_codes]
+           
+    '''if matrix is not None:
+        row_totals = matrix.sum(axis=1)
+        input_row_totals = {k: row_totals[m.names.index(v)] for k, v in input_map.items()}
+        biosphere_row_totals = {k: row_totals[m.names.index(v)] for k, v in biosphere_map.items()}
+    '''
+    # compute the nodes
+    i = 1
+    nodes = []
+    for t in process_codes:
+        nodes.append({'name': process_name_map[t], 'type': 'transformation', 'id': t, 'initX': i * 100, 'initY': i * 100})
+        i += 1
+    
+    i = 1
+    for p in input_codes:
+        if True:  #input_row_totals[p] != 0:
+            nodes.append({'name': input_map[p], 'type': 'input', 'id': p + "__0", 'initX': i * 50 + 150, 'initY': i * 50})
+            i += 1
+
+    i = 1
+    for p in biosphere_codes:
+        if True: # biosphere_row_totals[p] != 0:
+            nodes.append({'name': biosphere_map[p], 'type': 'biosphere', 'id': p + "__0", 'initX': i * 50 + 150, 'initY': i * 50})
+            i += 1
+   
+    # compute links
+    links = []
+    
+    input_duplicates = []
+    biosphere_duplicates = []
+    
+    #check there is a matrix (new models won't have one until parameter_scan() is run)
+    '''if matrix is not None:
+
+        for c, column in enumerate(matrix.T):
+            for r, i in enumerate(column):
+                if i > 0:
+                    p_from = link_indices[r]
+                    p_to = link_indices[c]
+                    if p_from in input_codes:
+                        suffix = "__" + str(input_duplicates.count(p_from))
+                        input_duplicates.append(p_from)
+                        p_type = 'input'
+                    elif p_from in biosphere_codes:
+                        suffix = "__" + str(biosphere_duplicates.count(p_from))
+                        biosphere_duplicates.append(p_from)
+                        p_type = 'biosphere'
+                    else:
+                        suffix = ""
+                        p_type = 'intermediate'
+                    
+                    links.append({'sourceID': p_from + suffix, 'targetID': p_to, 'type': p_type, 'amount': 1, 'label': label_map[p_from]})
+    '''       
+    #add extra nodes
+    while len(input_duplicates) > 0:
+        p = input_duplicates.pop()
+        count = input_duplicates.count(p)
+        if count > 0:
+            suffix = "__" + str(count)
+            nodes.append({'name': input_map[p], 'type': 'input', 'id': p + suffix, 'initX': i * 50 + 150, 'initY': i * 50})
+            i += 1
+            
+    while len(biosphere_duplicates) > 0:
+        p = biosphere_duplicates.pop()
+        count = biosphere_duplicates.count(p)
+        if count > 0:
+            suffix = "__" + str(count)
+            nodes.append({'name': biosphere_map[p], 'type': 'biosphere', 'id': p + suffix, 'initX': i * 50 + 150, 'initY': i * 50})
+            i += 1
+            
+    #try and reset the locations
+    
+    for n in nodes:
+        node_id = n['id']
+        if node_id in sandbox_positions:
+            n['initX'] = sandbox_positions[node_id]['x']
+            n['initY'] = sandbox_positions[node_id]['y']
+            
+    #print(nodes)
+    #print(inputs)
+    #print(process_name_map)
+    return nodes, links, outputlabels
 
 
 def allowed_file(filename):
@@ -26,6 +172,7 @@ def index():
     args['test'] = UPLOAD_FOLDER
 
     return render_template('test.html', args=args)
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -51,3 +198,13 @@ def upload_file():
 def uploaded_file(filename):
     return "you uploaded " + filename
     #return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+@app.route('/sandbox')
+def sandbox():
+    args = {}
+    name = "test"
+    nodes, links, outputlabels = get_sandbox_variables(TEST_FILE)
+    args = {'model': {'name': name}, 'nodes': nodes, 'links': links, 'outputlabels': outputlabels}
+
+    return render_template('sandbox.html', args=args)
