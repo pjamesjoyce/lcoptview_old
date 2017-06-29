@@ -1,0 +1,1 @@
+LCOPT_VIEW_TEST = "Hello from LCOPT"
