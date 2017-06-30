@@ -10,4 +10,5 @@ if not os.environ.get('OPENSHIFT_HOMEDIR'):
 
 
 if __name__ == "__main__":
-    app.run(debug = True)
+
+    app.run()

@@ -195,13 +195,15 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
-            
+            file.save(filepath)
+
+            tmp = load_viewfile(filepath)
+            friendly_name = tmp.name
             # add to database
-            db_item = ModelFile(filename, filepath)
+            db_item = ModelFile(friendly_name, filename, filepath)
             db.session.add(db_item)
             db.session.commit()
 
-            file.save(filepath)
             session['current_model'] = filepath
 
             return redirect('/sandbox')
