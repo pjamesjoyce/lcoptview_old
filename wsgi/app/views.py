@@ -172,9 +172,8 @@ def allowed_file(filename):
 def index():
     #return "Hello, Flask World!"
     args = {}
-    args['test'] = app.config['UPLOAD_FOLDER']
 
-    return render_template('test.html', args=args)
+    return render_template('index.html', args=args)
 
 
 @app.route('/upload', methods=['GET', 'POST'])
