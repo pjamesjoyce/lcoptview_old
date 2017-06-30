@@ -1,6 +1,6 @@
 import os
 from app import app
-from flask import render_template, request, redirect, url_for, send_file
+from flask import render_template, request, redirect, url_for, send_file, session
 from werkzeug.utils import secure_filename
 from .lcoptview import *
 from .excel_functions import create_excel_method, create_excel_summary
@@ -173,6 +173,8 @@ def allowed_file(filename):
 def index():
     #return "Hello, Flask World!"
     args = {}
+    if 'current_model' not in session:
+        session['current_model'] = app.config['CURRENT_FILE']
 
     return render_template('index.html', args=args)
 
@@ -199,7 +201,7 @@ def upload_file():
             db.session.commit()
 
             file.save(filepath)
-            app.config['CURRENT_FILE'] = filepath
+            session['current_model'] = filepath
 
             return redirect('/sandbox')
 
@@ -209,7 +211,7 @@ def upload_file():
 @app.route('/sandbox')
 def sandbox():
     args = {}
-    name, nodes, links, outputlabels = get_sandbox_variables(app.config['CURRENT_FILE'])
+    name, nodes, links, outputlabels = get_sandbox_variables(session['current_model'])
     args = {'model': {'name': name}, 'nodes': nodes, 'links': links, 'outputlabels': outputlabels}
 
     return render_template('sandbox.html', args=args)
@@ -218,7 +220,7 @@ def sandbox():
 @app.route('/results')
 def results():
     args = {}
-    modelview = load_viewfile(app.config['CURRENT_FILE'])
+    modelview = load_viewfile(session['current_model'])
 
     if modelview.result_set is not None:
 
@@ -235,14 +237,14 @@ def results():
 
 @app.route('/results.json')
 def results_json():
-    modelview = load_viewfile(app.config['CURRENT_FILE'])
+    modelview = load_viewfile(session['current_model'])
     return json.dumps(modelview.result_set)
 
 
 @app.route('/excel_export')
 def excel_export():
 
-    modelview = load_viewfile(app.config['CURRENT_FILE'])
+    modelview = load_viewfile(session['current_model'])
 
     export_type = request.args.get('type')
     ps = int(request.args.get('ps'))
@@ -269,7 +271,7 @@ def excel_export():
 @app.route('/parameters')
 def sorted_parameter_setup():
 
-    modelview = load_viewfile(app.config['CURRENT_FILE'])
+    modelview = load_viewfile(session['current_model'])
     
     sorted_parameters = parameter_sorting(modelview)
         
@@ -284,3 +286,9 @@ def sorted_parameter_setup():
 def view_models():
     args = ModelFile.query.all()
     return render_template('models.html', args=args)
+
+
+@app.route('/set_model/<filepath>')
+def set_model(filepath):
+    session['current_model'] = filepath
+    return redirect('/sandbox')
