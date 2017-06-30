@@ -1,5 +1,6 @@
 import pickle
 
+
 class LcoptModelView(object):
     """
     This is the base model class.
@@ -37,11 +38,9 @@ class LcoptModelView(object):
                       'technosphere_databases',
                       'biosphere_databases',
                       'result_set',
-                      'matrix'
+                      'matrix',
+                      'evaluated_parameter_sets'
                       ]
 
         for attr in attributes:
-          setattr(self, attr, load_data[attr])
-
-            #if hasattr(savedInstance, attr):
-                #setattr(self, attr, getattr(savedInstance, attr))
+            setattr(self, attr, load_data[attr])

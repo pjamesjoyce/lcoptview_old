@@ -1,15 +1,17 @@
 import os
 from app import app
-from flask import render_template, request, redirect, url_for, send_from_directory
+from flask import render_template, request, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 from .lcoptview import *
+from .excel_functions import create_excel_method, create_excel_summary
+from .parameters import parameter_sorting
 from collections import OrderedDict
 import json
 
 
 ALLOWED_EXTENSIONS = set(['lcoptview'])
 
-TEST_FILE = os.path.join(app.config['UPLOAD_FOLDER'], 'Cup_of_tea.lcoptview')
+#TEST_FILE = app.config['CURRENT_FILE']
 
 
 def load_viewfile(filename):
@@ -20,7 +22,7 @@ def get_sandbox_variables(filename):
 
     m = load_viewfile(filename)
     db = m.database['items']
-    matrix =m.matrix
+    matrix = m.matrix
     
     def output_code(process_id):
         
@@ -189,8 +191,10 @@ def upload_file():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file', filename=filename))
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
+            file.save(filepath)
+            app.config['CURRENT_FILE'] = filepath
+            return redirect('/sandbox')
 
     return render_template('upload.html')
 
@@ -204,7 +208,7 @@ def uploaded_file(filename):
 @app.route('/sandbox')
 def sandbox():
     args = {}
-    name, nodes, links, outputlabels = get_sandbox_variables(TEST_FILE)
+    name, nodes, links, outputlabels = get_sandbox_variables(app.config['CURRENT_FILE'])
     args = {'model': {'name': name}, 'nodes': nodes, 'links': links, 'outputlabels': outputlabels}
 
     return render_template('sandbox.html', args=args)
@@ -213,7 +217,7 @@ def sandbox():
 @app.route('/results')
 def results():
     args = {}
-    modelview = load_viewfile(TEST_FILE)
+    modelview = load_viewfile(app.config['CURRENT_FILE'])
 
     if modelview.result_set is not None:
 
@@ -230,5 +234,48 @@ def results():
 
 @app.route('/results.json')
 def results_json():
-    modelview = load_viewfile(TEST_FILE)
+    modelview = load_viewfile(app.config['CURRENT_FILE'])
     return json.dumps(modelview.result_set)
+
+
+
+
+@app.route('/excel_export')
+def excel_export():
+
+    modelview = load_viewfile(app.config['CURRENT_FILE'])
+
+    export_type = request.args.get('type')
+    ps = int(request.args.get('ps'))
+    m = int(request.args.get('m'))
+
+    print (export_type, ps, m)
+
+    if export_type == 'summary':
+
+        output = create_excel_summary(modelview)
+
+        filename = "{}_summary_results.xlsx".format(modelview.name)
+
+    elif export_type == 'method':
+
+        output = create_excel_method(modelview, m)
+
+        filename = "{}_{}_results.xlsx".format(modelview.name, modelview.result_set['settings']['method_names'][m])
+
+    #finally return the file
+    return send_file(output, attachment_filename=filename, as_attachment=True)
+
+
+@app.route('/parameters')
+def sorted_parameter_setup():
+
+    modelview = load_viewfile(app.config['CURRENT_FILE'])
+    
+    sorted_parameters = parameter_sorting(modelview)
+        
+    args = {'title': 'Parameter set'}
+    args['sorted_parameters'] = sorted_parameters
+    args['ps_names'] = [x for x in modelview.parameter_sets.keys()]
+    
+    return render_template('parameter_set_table_sorted.html', args=args)
