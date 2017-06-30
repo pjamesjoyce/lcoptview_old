@@ -22,3 +22,7 @@ except IOError:
     pass
 
 from run import app as application
+
+from app.models import *
+
+db.create_all()
