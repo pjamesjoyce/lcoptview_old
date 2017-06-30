@@ -288,7 +288,7 @@ def view_models():
     return render_template('models.html', args=args)
 
 
-@app.route('/set_model/<filepath>')
-def set_model(filepath):
-    session['current_model'] = filepath
+@app.route('/set_model/<filename>')
+def set_model(filename):
+    session['current_model'] = os.path.join(app.config['UPLOAD_FOLDER'], filepath)
     return redirect('/sandbox')
