@@ -171,10 +171,11 @@ def allowed_file(filename):
 @app.route('/')
 @app.route('/index')
 def index():
-    #return "Hello, Flask World!"
-    args = {}
+
     if 'current_model' not in session:
         session['current_model'] = app.config['CURRENT_FILE']
+
+    args = ModelFile.query.all()
 
     return render_template('index.html', args=args)
 
@@ -280,12 +281,6 @@ def sorted_parameter_setup():
     args['ps_names'] = [x for x in modelview.parameter_sets.keys()]
     
     return render_template('parameter_set_table_sorted.html', args=args)
-
-
-@app.route('/models')
-def view_models():
-    args = ModelFile.query.all()
-    return render_template('models.html', args=args)
 
 
 @app.route('/set_model/<filename>')
