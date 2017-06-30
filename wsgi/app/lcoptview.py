@@ -36,7 +36,8 @@ class LcoptModelView(object):
                       'analysis_settings',
                       'technosphere_databases',
                       'biosphere_databases',
-                      'result_set'
+                      'result_set',
+                      'matrix'
                       ]
 
         for attr in attributes:

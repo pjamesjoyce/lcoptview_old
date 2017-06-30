@@ -8,7 +8,7 @@ from collections import OrderedDict
 RUNNING_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 UPLOAD_FOLDER = os.environ.get('OPENSHIFT_DATA_DIR', os.path.join(RUNNING_DIRECTORY, 'data'))
-ALLOWED_EXTENSIONS = set(['lcopt'])
+ALLOWED_EXTENSIONS = set(['lcoptview'])
 
 TEST_FILE = os.path.join(UPLOAD_FOLDER, 'Cup_of_tea.lcoptview')
 
@@ -21,7 +21,7 @@ def get_sandbox_variables(filename):
 
     m = load_viewfile(filename)
     db = m.database['items']
-    matrix = None #m.matrix
+    matrix =m.matrix
     
     def output_code(process_id):
         
@@ -63,8 +63,10 @@ def get_sandbox_variables(filename):
     biosphere_map = {k[1]: v['name'] for k, v in biosphere.items()}
     reverse_biosphere_map = {value: key for key, value in biosphere_map.items()}
 
-    #label_map = {**input_map, **process_output_name_map, **biosphere_map}
-    label_map = input_map.update(process_output_name_map)
+    label_map = dict(input_map, **process_output_name_map)
+    label_map = dict(label_map, **biosphere_map)
+    #label_map = input_map.update(process_output_name_map)
+    #label_map = label_map.update(biosphere_map)
     print (label_map)
 
     #print('label_map = {}\n'.format(label_map))
@@ -73,11 +75,12 @@ def get_sandbox_variables(filename):
     
     link_indices = [process_output_map[x] if x in intermediate_codes else x for x in product_codes]
            
-    '''if matrix is not None:
-        row_totals = matrix.sum(axis=1)
+    if matrix is not None:
+        # TODO: edit this to list of lists 
+        row_totals = [sum(a) for a in matrix]
         input_row_totals = {k: row_totals[m.names.index(v)] for k, v in input_map.items()}
         biosphere_row_totals = {k: row_totals[m.names.index(v)] for k, v in biosphere_map.items()}
-    '''
+    
     # compute the nodes
     i = 1
     nodes = []
@@ -87,13 +90,13 @@ def get_sandbox_variables(filename):
     
     i = 1
     for p in input_codes:
-        if True:  #input_row_totals[p] != 0:
+        if input_row_totals[p] != 0:
             nodes.append({'name': input_map[p], 'type': 'input', 'id': p + "__0", 'initX': i * 50 + 150, 'initY': i * 50})
             i += 1
 
     i = 1
     for p in biosphere_codes:
-        if True: # biosphere_row_totals[p] != 0:
+        if biosphere_row_totals[p] != 0:
             nodes.append({'name': biosphere_map[p], 'type': 'biosphere', 'id': p + "__0", 'initX': i * 50 + 150, 'initY': i * 50})
             i += 1
    
@@ -104,9 +107,11 @@ def get_sandbox_variables(filename):
     biosphere_duplicates = []
     
     #check there is a matrix (new models won't have one until parameter_scan() is run)
-    '''if matrix is not None:
+    if matrix is not None:
 
-        for c, column in enumerate(matrix.T):
+        columns = list(map(list, zip(*matrix))) # transpose the matrix
+
+        for c, column in enumerate(columns):
             for r, i in enumerate(column):
                 if i > 0:
                     p_from = link_indices[r]
@@ -124,7 +129,7 @@ def get_sandbox_variables(filename):
                         p_type = 'intermediate'
                     
                     links.append({'sourceID': p_from + suffix, 'targetID': p_to, 'type': p_type, 'amount': 1, 'label': label_map[p_from]})
-    '''       
+           
     #add extra nodes
     while len(input_duplicates) > 0:
         p = input_duplicates.pop()
@@ -153,7 +158,7 @@ def get_sandbox_variables(filename):
     #print(nodes)
     #print(inputs)
     #print(process_name_map)
-    return nodes, links, outputlabels
+    return m.name, nodes, links, outputlabels
 
 
 def allowed_file(filename):
@@ -203,8 +208,7 @@ def uploaded_file(filename):
 @app.route('/sandbox')
 def sandbox():
     args = {}
-    name = "test"
-    nodes, links, outputlabels = get_sandbox_variables(TEST_FILE)
+    name, nodes, links, outputlabels = get_sandbox_variables(TEST_FILE)
     args = {'model': {'name': name}, 'nodes': nodes, 'links': links, 'outputlabels': outputlabels}
 
     return render_template('sandbox.html', args=args)

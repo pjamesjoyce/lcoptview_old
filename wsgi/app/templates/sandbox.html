@@ -7,14 +7,6 @@
 {% block head_postload %}
 <link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/sandbox.css') }}" />
 <!-- this is the md5 script (from http://pajhome.org.uk/crypt/md5) to create the correct IDs for the model-->
-<script src="{{ url_for('static', filename = 'js/md5.js') }}"></script>
-<!-- This is the underlying package for the typeahead in the input modal -->
-<script src="{{ url_for('static', filename = 'js/cdn_cache/typeahead.bundle.js') }}"></script>
-<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/typeahead.css') }}" />
-
-<script src="{{ url_for('static', filename = 'js/status.js') }}"></script>
-<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/status.css') }}" />
-
 {% endblock %}
 
 {% block content %}
@@ -24,79 +16,18 @@
 
 <div class="container-fluid">
 	<div class="row">
-		<div class="sandboxTitle col-xs-10 col-xs-offset-1">
+		<div class="sandboxTitle col-xs-12">
 			<h2>Flow sheet for {{args.model.name}}</h2>
-			<hr>
-			<p>
-				You can create or edit the flow sheet for {{args.model.name}} in the box below &nbsp;&nbsp;&nbsp;&nbsp;<a class="btn btn-xs btn-custom"data-toggle="collapse" href="#moreInfo" aria-expanded="false" aria-controls="moreInfo">More info...</a>
-			</p>
-			<div class="collapse" id="moreInfo">
-				<div class="well">
-					<p>
-						<strong>Add processes </strong>(actions in the life cycle where material is transformed) to the flow sheet using the 'add process' button on the left
-					</p>
-					<p>
-						<strong>Drag</strong> items to move them around
-					</p>
-					<p>
-						<strong>Hover</strong> over an item to see the actions you reveal the action icons
-					</p>
-					<p>
-						<strong>Connect</strong> processes in the flow sheet by dragging from the 'connect' icon (<i class="material-icons md-18">trending_flat</i>) to the next process in the flow sheet
-					</p>
-					<p>
-						<strong>Add a 'technosphere' input</strong> (energy or materials) to a process by clicking on the 'techosphere' icon (<i class="material-icons md-18">business</i>)
-					</p>
-					<p>
-						<strong>Add 'biosphere' exhange</strong> (emissions to the environment, or resources directly from the environment) to a process by clicking on the 'biosphere' icon (<i class="material-icons md-18">local_florist</i>)
-					</p>
-
-					<p>
-						<strong>Analyse</strong> a process by clicking on the 'analysis' icon (<i class="material-icons md-18">pie_chart</i>)
-					</p>
-
-					<p>
-						<strong>Remove</strong> a technosphere or biosphere exchange by hovering over it and clicking on the <i class="material-icons md-18">cancel</i> which appears.
-					</p>
-
-					<p>
-						<strong>Unlink</strong> two procesesses by clicking on the arrow that links them.
-					</p>
-
-
-				</div>
-			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-xs-1 controls">
-			<div>
-				<button type="button" name="button" class="btn btn-xs btn-custom processButton" id="addProcess"><div><i class="material-icons">add</i></div>Add process</button>
-				<button type="button" name="button" class="btn btn-xs btn-custom processButton" id="saveModel"><div><i class="material-icons">save</i></div>Save model</button>
-				<button type="button" name="button" class="btn btn-xs btn-custom processButton" id="simaPro_export"><div><i class="material-icons">launch</i></div><span class="bit_smaller">SimaPro Export</span></button>
-			</div>
-			
-		</div>
-		<div class="sandbox col-xs-10">
+		<div class="sandbox col-xs-12">
 			<!-- this is where that sandbox application sits -->
 			<div id="sandbox_container"></div>
-		</div>
-		<div class="col-xs-1 controls">
-			<div>
-				<div id="status_box_outer_small" class="status_box container-fluid"></div>
-				<!--<button type="button" name="button" class="btn btn-xs btn-custom processButton" id="echoButton"><div><i class="material-icons">search</i></div>Search ecoinvent</button>-->
-			</div>
 		</div>
 	</div>
 </div>
 
-<!-- dialog -->
-<div id="dialog" title="Export complete">
-	<p>The model has been exported as a SimaPro csv file and an excel file containing the parameter sets</p>
-	<p>The files are in your current working directory</p>
-	<p>The csv file is called "{{args.model.name}}_database_export.csv"</p>
-	<p>The excel file is called "ParameterSet_{{args.model.name}}_input_file.xlsx"</p>
-</div>
 
 <!-- jsPlumb sandbox script -->
 <script src="{{ url_for('static', filename = 'js/sandbox_functions.js') }}"></script>
