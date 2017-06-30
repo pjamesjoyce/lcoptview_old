@@ -1,10 +1,10 @@
 from setuptools import setup
 
-setup(name='YourAppName',
-      version='1.0',
+setup(name='LcoptView',
+      version='0.1',
       description='OpenShift App',
-      author='Your Name',
-      author_email='example@example.com',
+      author='P. James Joyce',
+      author_email='pjamesjoyce@egmail.com',
       url='https://www.python.org/community/sigs/current/distutils-sig',
-      install_requires=['Flask>=0.7.2', 'MarkupSafe'],
+      install_requires=['Flask>=0.7.2', 'MarkupSafe', 'Flask-SQLAlchemy==0.16'],
       )

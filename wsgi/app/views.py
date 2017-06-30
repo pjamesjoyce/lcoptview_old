@@ -4,13 +4,12 @@ from flask import render_template, request, redirect, url_for, send_from_directo
 from werkzeug.utils import secure_filename
 from .lcoptview import *
 from collections import OrderedDict
+import json
 
-RUNNING_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
-UPLOAD_FOLDER = os.environ.get('OPENSHIFT_DATA_DIR', os.path.join(RUNNING_DIRECTORY, 'data'))
 ALLOWED_EXTENSIONS = set(['lcoptview'])
 
-TEST_FILE = os.path.join(UPLOAD_FOLDER, 'Cup_of_tea.lcoptview')
+TEST_FILE = os.path.join(app.config['UPLOAD_FOLDER'], 'Cup_of_tea.lcoptview')
 
 
 def load_viewfile(filename):
@@ -166,15 +165,12 @@ def allowed_file(filename):
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
 @app.route('/')
 @app.route('/index')
 def index():
     #return "Hello, Flask World!"
     args = {}
-    args['test'] = UPLOAD_FOLDER
+    args['test'] = app.config['UPLOAD_FOLDER']
 
     return render_template('test.html', args=args)
 
@@ -212,3 +208,27 @@ def sandbox():
     args = {'model': {'name': name}, 'nodes': nodes, 'links': links, 'outputlabels': outputlabels}
 
     return render_template('sandbox.html', args=args)
+
+
+@app.route('/results')
+def results():
+    args = {}
+    modelview = load_viewfile(TEST_FILE)
+
+    if modelview.result_set is not None:
+
+        item = modelview.result_set['settings']['item']
+
+        args = {'model': {'name': modelview.name}}
+
+        args['item'] = item
+        args['result_sets'] = modelview.result_set
+        return render_template('analysis.html', args=args)
+    else:
+        return render_template('analysis_fail.html')
+
+
+@app.route('/results.json')
+def results_json():
+    modelview = load_viewfile(TEST_FILE)
+    return json.dumps(modelview.result_set)
