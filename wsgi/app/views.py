@@ -301,7 +301,10 @@ def admin():
 def delete_model(id):
     
     item = ModelFile.query.get(id)
+    filepath = item.filepath
+    print(filepath)
     db.session.delete(item)
     db.session.commit()
+    os.remove(filepath)
 
     return redirect('/admin')
