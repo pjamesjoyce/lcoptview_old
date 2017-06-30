@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 from .lcoptview import *
 from .excel_functions import create_excel_method, create_excel_summary
 from .parameters import parameter_sorting
+from .models import *
 from collections import OrderedDict
 import json
 
@@ -191,17 +192,18 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
+            
+            # add to database
+            db_item = ModelFile(filename, filepath)
+            db.session.add(db_item)
+            db.session.commit()
+
             file.save(filepath)
             app.config['CURRENT_FILE'] = filepath
+
             return redirect('/sandbox')
 
     return render_template('upload.html')
-
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return "you uploaded " + filename
-    #return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 @app.route('/sandbox')
@@ -235,8 +237,6 @@ def results():
 def results_json():
     modelview = load_viewfile(app.config['CURRENT_FILE'])
     return json.dumps(modelview.result_set)
-
-
 
 
 @app.route('/excel_export')
@@ -278,3 +278,9 @@ def sorted_parameter_setup():
     args['ps_names'] = [x for x in modelview.parameter_sets.keys()]
     
     return render_template('parameter_set_table_sorted.html', args=args)
+
+
+@app.route('/models')
+def view_models():
+    args = ModelFile.query.all()
+    return render_template('models.html', args=args)
