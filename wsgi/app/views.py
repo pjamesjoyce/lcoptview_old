@@ -287,3 +287,21 @@ def sorted_parameter_setup():
 def set_model(filename):
     session['current_model'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return redirect('/sandbox')
+
+
+@app.route('/admin')
+def admin():
+    
+    args = ModelFile.query.all()
+
+    return render_template('admin.html', args=args)
+
+
+@app.route('/delete_model/<id>')
+def delete_model(id):
+    
+    item = ModelFile.query.get(id)
+    db.session.delete(item)
+    db.session.commit()
+
+    return redirect('/admin')
