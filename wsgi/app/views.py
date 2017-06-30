@@ -290,5 +290,5 @@ def view_models():
 
 @app.route('/set_model/<filename>')
 def set_model(filename):
-    session['current_model'] = os.path.join(app.config['UPLOAD_FOLDER'], filepath)
+    session['current_model'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return redirect('/sandbox')
