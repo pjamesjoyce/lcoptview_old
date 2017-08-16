@@ -10,7 +10,7 @@ from collections import OrderedDict
 import json
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from flask_bcrypt import Bcrypt
-from .forms import LoginForm
+from .forms import LoginForm, RegistrationForm
 from urllib.parse import urlparse, urljoin
 
 login_manager = LoginManager()
@@ -363,7 +363,7 @@ def delete_model(id):
 def login():
     """For GET requests, display the login form. For POSTS, login the current user
     by processing the form."""
-    print (db)
+    #print (db)
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter((User.email == form.login_data.data) | (User.username == form.login_data.data)).first()
@@ -403,6 +403,30 @@ def logout():
     db.session.commit()
     logout_user()
     return render_template("logout.html")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        pw_hash = bcrypt.generate_password_hash(form.password.data)
+
+        if len(User.query.filter((User.email == form.email.data) | (User.username == form.username.data)).all()) != 0:
+            print('already exists')
+            return redirect(url_for('register'))
+        elif form.password.data != form.password_repeat.data:
+            print('passwords dont match')
+            return redirect(url_for('register'))
+        else:
+            user = User(email=form.email.data, password=pw_hash, username=form.username.data)
+            user.authenticated = True
+            db.session.add(user)
+            db.session.commit()
+            print ('User added.')
+            login_user(user, remember=True)
+            return redirect(url_for('models'))
+
+    return render_template("register.html", form=form)
 
 
 @app.route('/restricted')
