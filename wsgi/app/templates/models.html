@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Models{% endblock %}
+
+{% block content %}
+
+<div id="items" class="container">
+    <h2>Models</h2>
+    <table class="table table-hover">
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Sharing Link</th>
+        <th></th>
+      </tr>
+      {%- for model in args %}
+      <tr>
+        <td class="col-md-1">{{ model.id }}</td>
+        <td class="col-md-2">{{ model.name }}</td>
+        <td class="col-md-4">{{ model.description }}</td>
+        {% set urllist = request.url.split('/') %}
+        <td class="col-md-4">{{ '/'.join(urllist[:-1]) }}/view/{{ model.link_id }}</a></td>
+        <td class="col-md-1"><a href="/view/{{ model.link_id }}" class="btn btn-default btn-xs">View</a></td>
+      </tr>
+      {%- endfor %}
+    </table>
+
+<a href="/upload" class="btn btn-default">Upload model</a>
+ 
+</div>
+
+{% endblock %}

@@ -268,3 +268,18 @@ ul {
 .bottom-padding{
     padding-bottom: 40px;
 }
+
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
+    color: #fff;
+    background-color: #aaa;
+}
+
+.nav-pills>li {
+    color: #fff;
+    background-color: #e1e3e4;
+}
+
+.nav-pills>li>a{
+    border-radius: 0;
+    border: 1px solid #aaa;
+}

@@ -23,9 +23,11 @@
     var color30_default = ["#1abd44", "#923bc1", "#94d957", "#317dff", "#4f9100", "#d28aff", "#006f0c", "#a20083", "#00bf7a", "#c60040",
                            "#49dcc4", "#ed373b", "#01a6ed", "#d44805", "#469aff", "#be6b00", "#62d3ff", "#9f1d3a", "#009c90", "#ff5fa0",
                            "#bfcf5f", "#55498a", "#ffad58", "#8c3063", "#abd19c", "#ffa2e2", "#784810", "#fab87f", "#936343", "#d38a89"];
+    
     var color30_fancy =  ["#80deb3", "#f794a4", "#52e4e3", "#f9a089", "#5ef1ff", "#d699bf", "#8cffeb", "#dab8ff", "#e0f3a6", "#97a9f1",
                           "#e9e597", "#71b6f9", "#ffd9a0", "#41d1fc", "#d79d98", "#2dd4e5", "#ffceed", "#81cf9b", "#bea0d7", "#e0ffc4",
                           "#72b4d8", "#93b67c", "#c4e1ff", "#8ab59a", "#ffd1d4", "#58bbb6", "#f7ffe2", "#97aec8", "#baffe7", "#aef5ff"];
+    
     var color30_intense = ["#008da0", "#ff6c2a", "#7b4af8", "#cbc900", "#cf40f3", "#00b040", "#6f00a2", "#e3c53b", "#0044a2", "#ff9517", 
                            "#8495ff", "#bd9e00", "#ff66ef", "#576c00", "#e601a2", "#78d6ca", "#ff455a", "#0176c6", "#b90034", "#aad0a1",
                            "#520055", "#e1bbda", "#731000", "#c386ff", "#431911", "#b3b8ff", "#8a004b", "#006590", "#ff5fae", "#321b48"];
@@ -34,12 +36,17 @@
                           "#ffffb3", "#bebada", "#fb8072", "#80b1d3", "#fdb462", "#b3de69", "#fccde5", "#d9d9d9]", "#fbb4ae", "#b3cde3",
                           "#ccebc5", "#decbe4", "#fed9a6", "#ffffcc", "#e5d8bd", "#fddaec", "#f2f2f2", "#a6cee3", "#1f78b4", "#b2df8a"];
 
-    var color30_d3v4 = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5", 
+    var color30_d3v4 = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c", "#98df8a", "#d62728", "#ff9896", "#9467bd", "#c5b0d5",
                         "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5",
                         "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999", "#8dd3c7"];
 
+    var color30_firing = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#ff9896", "#9467bd", "#c5b0d5", "#2ca02c", "#98df8a", "#d62728", 
+                        "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5",
+                        "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#ffff33", "#a65628", "#f781bf", "#999999", "#8dd3c7",
+                        "#1abd44", "#923bc1", "#94d957", "#317dff", "#4f9100", "#d28aff", "#006f0c", "#a20083", "#00bf7a", "#c60040",];
+
     var color = d3.scaleOrdinal();
-    color.range(color30_d3v4);
+    color.range(color30_firing);
     
   
     // what is partition?  
@@ -66,7 +73,7 @@
     var current_level = 0;
 
     // read the resutls from the json file, store in bound_data, then call the create sunburst function
-    d3.json("results.json", function(error, data) {
+    d3.json("../results/" + model_code + ".json", function(error, data) {
         if (error) throw error;
         bound_data = data;
         //console.log(bound_data);
@@ -211,46 +218,81 @@
 
         var last_item_level = -1;
         var downshift = 0;
-        var shift = 30;
+        var shift = 16;
+        var level_shift = shift + 32;
+
+        var legend_object = [];
 
         var legenditems_d3 = d3.select('#legend_box').selectAll('.cell');
 
         legenditems_d3.each(function(d,i){
-          
+
           var this_item = d3.select(this);
 
+          var text = this_item.select("text").html();
+          var bits = text.split(".");
 
-          bits = this_item.select("text")
-            //.attr("style", "font-family: 'Muli', sans-serif; font-size: 75%;")
-            .html().split(".");
-          
           var item_level = parseInt(bits[0]);
           
           var translation_bits = this_item.attr("transform").split(/\(|, |\)/);
 
+          legend_object.push({text: text, bits: bits, item_level: item_level, translation_bits: translation_bits, this_item: this_item});
+
+          });
+
+        var sorted_legend_object = legend_object.sort(function(a, b){
+          var alpha = 0;
+          if(a.bits[1] < b.bits[1]) alpha = -1;
+          if(a.bits[1] > b.bits[1]) alpha = 1;
+          
+          return a.item_level - b.item_level || alpha;
+
+        });
+
+        var x_translation = legend_object[0].translation_bits[1];
+        var y_translation = legend_object[0].translation_bits[2];
+
+        var first_ring = legend_object[0].item_level;
+
+        for(var legend_item in sorted_legend_object){
+          var i = legend_object[legend_item];
+          console.log(this_item);
+
+          var item_level = i.item_level;
+          var text = i.text;
+          var this_item = i.this_item;
+          var bits = i.bits;
+          var translation_bits = i.translation_bits;
+        
+        
           if(item_level != last_item_level){
             //console.log("new level at " + bits[1]);
-            downshift += shift;
-            new_translation = translation_bits[0] + "(" + translation_bits[1] + ", " + (parseInt(translation_bits[2]) + downshift) + ")";
-            title_translation = "translate(0,-5)";
+            downshift += level_shift;
+            new_translation = translation_bits[0] + "(" + x_translation + ", " + (parseInt(y_translation) + downshift) + ")";
+            title_translation = "translate(0,-7)";
             this_item.attr("transform", new_translation);
 
             var text_g = this_item.append("text")
-              .text('Level ' + (item_level + 1))
+              .text('Ring ' + (item_level - first_ring + 1))
               .attr("transform", title_translation)
               //.attr("style", "fill:grey; font-family: 'Muli', sans-serif; font-size: 75%;")
               .attr("class", "label legend_subtitle");
 
           }else{
-            new_translation = translation_bits[0] + "(" + translation_bits[1] + ", " + (parseInt(translation_bits[2]) + downshift) + ")";
+            downshift += shift;
+            new_translation = translation_bits[0] + "(" + x_translation + ", " + (parseInt(y_translation) + downshift) + ")";
             this_item.attr("transform", new_translation);
           }
 
           last_item_level = item_level;
 
           this_item.select("text").html(bits[1]);
-
+        }
+        /*
         });
+
+        console.log(legend_object.sort(function(a, b){return a.item_level - b.item_level}));
+        */
 
       }
 

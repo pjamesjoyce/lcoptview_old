@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <form method="POST">
+        {{ form.csrf_token }}
+        {{ form.login_data.label }} {{ form.login_data(size=20) }}<br>
+        {{ form.password.label }} {{ form.password(size=20) }}
+        <input type="submit" value="Login">
+    </form>
+</div>
+{% endblock %}

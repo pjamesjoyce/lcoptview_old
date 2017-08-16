@@ -1,6 +1,6 @@
 import os
 from app import app
-from flask import render_template, request, redirect, url_for, send_file, session
+from flask import render_template, request, redirect, url_for, send_file, session, abort
 from werkzeug.utils import secure_filename
 from .lcoptview import *
 from .excel_functions import create_excel_method, create_excel_summary
@@ -8,11 +8,27 @@ from .parameters import parameter_sorting
 from .models import *
 from collections import OrderedDict
 import json
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
+from flask_bcrypt import Bcrypt
+from .forms import LoginForm
+from urllib.parse import urlparse, urljoin
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+login_manager.login_view = 'login'
+
+bcrypt = Bcrypt()
 
 ALLOWED_EXTENSIONS = set(['lcoptview'])
 
 #TEST_FILE = app.config['CURRENT_FILE']
+
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 
 def load_viewfile(filename):
@@ -168,19 +184,39 @@ def allowed_file(filename):
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+@login_manager.user_loader
+def user_loader(user_id):
+    return User.query.get(user_id)
+
+
 @app.route('/')
 @app.route('/index')
 def index():
+    if request.args.get('code'):
+        my_code = request.args.get('code')
+
+        find_model = ModelFile.query.filter_by(link_id=my_code).first()
+
+        if find_model is not None:
+            return redirect('/view/{}'.format(my_code))
+
+    return render_template('index.html')
+
+
+@app.route('/models')
+@login_required
+def models():
 
     if 'current_model' not in session:
         session['current_model'] = app.config['CURRENT_FILE']
 
-    args = ModelFile.query.all()
+    args = ModelFile.query.filter(ModelFile.owner.has(username=current_user.username))
 
-    return render_template('index.html', args=args)
+    return render_template('models.html', args=args)
 
 
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -189,28 +225,30 @@ def upload_file():
         file = request.files['file']
 
         if file.filename == '':
-            flash('No selected file')
+            
             return redirect(request.url)
 
+        #print(file.filename)
+        save_filename = '{}_{}'.format(current_user.username, file.filename)
+        #print(save_filename)
+
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename) 
+            filename = secure_filename(save_filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], save_filename) 
             file.save(filepath)
 
             tmp = load_viewfile(filepath)
             friendly_name = tmp.name
             # add to database
-            db_item = ModelFile(friendly_name, filename, filepath)
+            db_item = ModelFile(filename, filepath, current_user.id, None, friendly_name)
             db.session.add(db_item)
             db.session.commit()
 
-            session['current_model'] = filepath
-
-            return redirect('/sandbox')
+            return redirect('/models')
 
     return render_template('upload.html')
 
-
+"""
 @app.route('/sandbox')
 def sandbox():
     args = {}
@@ -242,6 +280,13 @@ def results():
 def results_json():
     modelview = load_viewfile(session['current_model'])
     return json.dumps(modelview.result_set)
+"""
+
+@app.route('/results/<model_code>.json')
+def include_results(model_code):
+    my_model = ModelFile.query.filter_by(link_id=model_code).first()
+    modelview = load_viewfile(my_model.filepath)
+    return json.dumps(modelview.result_set)
 
 
 @app.route('/excel_export')
@@ -270,7 +315,7 @@ def excel_export():
     #finally return the file
     return send_file(output, attachment_filename=filename, as_attachment=True)
 
-
+"""
 @app.route('/parameters')
 def sorted_parameter_setup():
 
@@ -289,9 +334,10 @@ def sorted_parameter_setup():
 def set_model(filename):
     session['current_model'] = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     return redirect('/sandbox')
-
+"""
 
 @app.route('/admin')
+@login_required
 def admin():
     
     args = ModelFile.query.all()
@@ -300,6 +346,7 @@ def admin():
 
 
 @app.route('/delete_model/<id>')
+@login_required
 def delete_model(id):
     
     item = ModelFile.query.get(id)
@@ -310,3 +357,93 @@ def delete_model(id):
     os.remove(filepath)
 
     return redirect('/admin')
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """For GET requests, display the login form. For POSTS, login the current user
+    by processing the form."""
+    print (db)
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter((User.email == form.login_data.data) | (User.username == form.login_data.data)).first()
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                user.authenticated = True
+                db.session.add(user)
+                db.session.commit()
+                login_user(user, remember=True)
+                next = request.args.get('next')
+                print('next up is {}'.format(request.args))
+                # is_safe_url should check if the url is safe for redirects.
+                # See http://flask.pocoo.org/snippets/62/ for an example.
+                if not is_safe_url(next):
+                    return abort(400)
+
+                return redirect(next or url_for('index'))
+                
+            else:
+                print('Wrong password')
+        else:
+            print("Can't return a user object")
+            
+    else:
+        print("Can't validate form")
+    print('End of login')
+
+    return render_template("login.html", form=form)
+
+@app.route("/logout", methods=["GET"])
+@login_required
+def logout():
+    """Logout the current user."""
+    user = current_user
+    user.authenticated = False
+    db.session.add(user)
+    db.session.commit()
+    logout_user()
+    return render_template("logout.html")
+
+
+@app.route('/restricted')
+@login_required
+def restricted():
+    return render_template("restricted.html")
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template('500.html'), 500
+
+
+@app.route('/view/<model_code>')
+def view_model(model_code):
+    my_model = ModelFile.query.filter_by(link_id=model_code).first()
+
+    name, nodes, links, outputlabels = get_sandbox_variables(my_model.filepath)
+    modelview = load_viewfile(my_model.filepath)
+
+    args = {'model': {'name': name}, 'nodes': nodes, 'links': links, 'outputlabels': outputlabels}
+
+    if modelview.result_set is not None:
+
+        item = modelview.result_set['settings']['item']
+
+        args['item'] = item
+        args['result_sets'] = modelview.result_set
+       
+    sorted_parameters = parameter_sorting(modelview)
+
+    args['sorted_parameters'] = sorted_parameters
+    args['ps_names'] = [x for x in modelview.parameter_sets.keys()]
+
+    return render_template('model_page.html', args=args)
+
+#@app.errorhandler(401)
+#def unauthorised(e):
+#    return render_template('401.html'), 401

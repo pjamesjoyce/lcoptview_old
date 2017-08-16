@@ -6,26 +6,11 @@
 
 <h1>Welcome to LcoptView</h1>
 
-<p>Choose a model below</p>
-<p>Or use the UPLOAD MODEL button above to upload a .lcoptview file</p>
-
-<div id="items" class="container">
-    <h2>Models</h2>
-    <table class="table table-hover">
-      <tr>
-        <th>#</th>
-        <th>Filename</th>
-        <th></th>
-      </tr>
-      {%- for model in args %}
-      <tr>
-        <td>{{ model.id }}</td>
-        <td>{{ model.filename }}</td>
-        <td><a href="/set_model/{{model.filename}}" class="btn btn-default btn-xs">Activate</a></td>
-      </tr>
-      {%- endfor %}
-    </table>
- 
-</div>
+<p>Enter a model code to view a model</p>
+<form>
+  <label for="code">Model code</label><input type="text" name="code">
+  <button>Go</button>
+</form>
+<p>Or log in to view and share your own models</p>
 
 {% endblock %}

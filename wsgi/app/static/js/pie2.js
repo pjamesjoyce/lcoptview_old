@@ -1,6 +1,14 @@
-var bound_data
+var bound_data;
 
 $(document).ready(function(){
+
+var my_href= window.location.href;
+model_code = my_href.substr(my_href.lastIndexOf('/') + 1);
+console.log(my_href);
+
+//model_code = "0f69406b9113b65418a999147ab26ca2";
+
+console.log(model_code);
 
 ////console.log ('hello world')
 
@@ -46,7 +54,7 @@ var svg = d3.select("#pie")
 
 
 //set up the pie chart for the first time
-d3.json("results.json", function(data) {
+d3.json("../results/" + model_code + ".json", function(data) {
     bound_data = data;
     //draw_pie(data)
     draw_pie();
@@ -54,7 +62,7 @@ d3.json("results.json", function(data) {
     draw_tree();
     setup_stack_bar();
 	update_summary_table();
-
+	//setup_stack_bar();
     //draw_sunburst()
 
 })
