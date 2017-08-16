@@ -6,5 +6,5 @@ setup(name='LcoptView',
       author='P. James Joyce',
       author_email='pjamesjoyce@egmail.com',
       url='https://www.python.org/community/sigs/current/distutils-sig',
-      install_requires=['Flask>=0.7.2', 'MarkupSafe', 'Flask-SQLAlchemy>=2.2', 'xlsxwriter'],
+      install_requires=['Flask>=0.7.2', 'MarkupSafe', 'Flask-SQLAlchemy>=2.2', 'xlsxwriter', 'flask-login'],
       )
