@@ -7,14 +7,14 @@ db = SQLAlchemy(app)
 
 class ModelFile(db.Model):
 
-    __tablename__ = 'modelfiles'
+    __tablename__ = 'models'
 
     id = db.Column('modelfile_id', db.Integer, primary_key=True)
     filename = db.Column(db.String(255))
     filepath = db.Column(db.String(255))
     link_id = db.Column(db.String(255))
 
-    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     owner = db.relationship('User', backref='owner', lazy='select')
 
     description = db.Column(db.Text)
@@ -46,7 +46,7 @@ class ModelFile(db.Model):
 
 class User(db.Model):
 
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String)
