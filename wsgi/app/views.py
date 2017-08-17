@@ -410,7 +410,8 @@ def logout():
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():
-        pw_hash = bcrypt.generate_password_hash(form.password.data)
+        pw_hash = bcrypt.generate_password_hash(form.password.data).decode("utf-8") 
+        print(type(pw_hash))
 
         if len(User.query.filter((User.email == form.email.data) | (User.username == form.username.data)).all()) != 0:
             print('already exists')
