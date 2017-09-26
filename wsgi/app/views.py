@@ -1,6 +1,6 @@
 import os
 from app import app
-from flask import render_template, request, redirect, url_for, send_file, session, abort
+from flask import render_template, request, redirect, url_for, send_file, session, abort, flash
 from werkzeug.utils import secure_filename
 from .lcoptview import *
 from .excel_functions import create_excel_method, create_excel_summary
@@ -380,13 +380,14 @@ def login():
                 # See http://flask.pocoo.org/snippets/62/ for an example.
                 if not is_safe_url(next):
                     return abort(400)
-
+                flash('Successfully logged in - welcome {}'.format(user.username))
                 return redirect(next or url_for('index'))
                 
             else:
                 print('Wrong password')
+                flash('Username or password incorrect')
         else:
-            print("Can't return a user object")
+            flash('Username or password incorrect')
             
     else:
         print("Can't validate form")
@@ -414,17 +415,17 @@ def register():
         print(type(pw_hash))
 
         if len(User.query.filter((User.email == form.email.data) | (User.username == form.username.data)).all()) != 0:
-            print('already exists')
+            flash('already exists')
             return redirect(url_for('register'))
         elif form.password.data != form.password_repeat.data:
-            print('passwords dont match')
+            flash('passwords dont match')
             return redirect(url_for('register'))
         else:
             user = User(email=form.email.data, password=pw_hash, username=form.username.data)
             user.authenticated = True
             db.session.add(user)
             db.session.commit()
-            print ('User added.')
+            flash ('Registration successful - welcome {}'.format(user.username))
             login_user(user, remember=True)
             return redirect(url_for('models'))
 
