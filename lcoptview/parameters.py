@@ -1,5 +1,6 @@
 from itertools import groupby
 
+
 def parameter_sorting(modelInstance):
     parameters = modelInstance.params
 

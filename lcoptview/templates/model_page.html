@@ -1,10 +1,10 @@
 {% extends 'base.html'%}
 
-{% block title %}Model{% endblock %}
+{% block title %}VIEW Model{% endblock %}
 
 {% block head_postload %}
     
-<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/sandbox.css') }}" />
+<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/lv_sandbox.css') }}" />
 
 <script src="{{ url_for('static', filename = 'js/cdn_cache/d3.min.js') }}"></script>
 <script src="{{ url_for('static', filename = 'js/cdn_cache/d3-legend.min.js') }}"></script>
@@ -18,17 +18,17 @@
 
 <script src = "{{ url_for('static', filename = 'js/result_table.js') }}"></script>
 <script src = "{{ url_for('static', filename = 'js/treetest2.js') }}"></script>
-<script src = "{{ url_for('static', filename = 'js/stacked_bar.js') }}"></script>
+<script src = "{{ url_for('static', filename = 'js/new_stacked_bar.js') }}"></script>
 <!-- <script src = "{{ url_for('static', filename = 'js/sunburst.js') }}"></script> -->
 <script src = "{{ url_for('static', filename = 'js/export_chart.js') }}"></script>
 <script src = "{{ url_for('static', filename = 'js/hotspot.js') }}"></script>
 
 
-<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/analysis.css') }}" />
+<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/lv_analysis.css') }}" />
 
-<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/treetest.css') }}" />
+<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/lv_treetest.css') }}" />
 
-<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/parameter_table.css') }}" />
+<link rel = "stylesheet" type = "text/css" href = "{{ url_for('static', filename = 'css/lv_parameter_table.css') }}" />
 
 
 {% endblock %}

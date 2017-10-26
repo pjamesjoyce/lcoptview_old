@@ -54,13 +54,13 @@ var svg = d3.select("#pie")
 
 
 //set up the pie chart for the first time
-d3.json("../results/" + model_code + ".json", function(data) {
+d3.json("../results.json", function(data) {
     bound_data = data;
     //draw_pie(data)
     draw_pie();
     setup_bar();
     draw_tree();
-    setup_stack_bar();
+    //setup_stack_bar();
 	update_summary_table();
 	//setup_stack_bar();
     //draw_sunburst()
@@ -475,7 +475,8 @@ $('#methodChoice').change(function(){
 	change2()
 	update_bar()
 	draw_tree()
-	update_stack_bar()
+	//update_stack_bar_2()
+	redraw_trigger()
 	update_table()
 	//create_force_layout()
 })

@@ -1,8 +1,8 @@
 //set up global absolute variables
 // first the size and margins
-var bar_margin = {top: 20, right: 20, bottom: 30, left: 40},
-	    bar_width = 600 - bar_margin.left - bar_margin.right,
-	    bar_height = 400 - bar_margin.top - bar_margin.bottom;
+var bar_margin = {top: 10, right: 50, bottom: 50, left: 50},
+	    bar_width = 400// - bar_margin.left - bar_margin.right,
+	    bar_height = 400// - bar_margin.top - bar_margin.bottom;
 
 // set the ranges
 var xScale = d3.scaleBand()
