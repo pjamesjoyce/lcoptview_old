@@ -55,7 +55,7 @@ setup(
     url="https://github.com/pjamesjoyce/lcoptview/",
     download_url="https://github.com/pjamesjoyce/lcoptview/archive/0.1.0.tar.gz",
     long_description=open('README.md').read(),
-    description='An interactive tool for creating fully parameterised Life Cycle Assessment (LCA) foreground models',
+    #description='Share your Lcopt results with a wider audience',
     keywords=['LCA', 'Life Cycle Assessment', 'Foreground system', 'Background system', 'Foreground model', 'Fully parameterised'],
     classifiers=[
         'Intended Audience :: End Users/Desktop',
