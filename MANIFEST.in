@@ -1,6 +1,7 @@
 # Include the license file
 include LICENSE.txt
 include README.md
+include lcoptview/app.cfg
 recursive-include lcoptview/templates *
 recursive-include lcoptview/static *
 recursive-include lcoptview/bin *

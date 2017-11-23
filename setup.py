@@ -37,7 +37,7 @@ print(my_package_files)
 
 setup(
     name='lcoptview',
-    version="0.1.2",
+    version="0.1.3",
     packages=packages,
     author="P. James Joyce",
     author_email="pjamesjoyce@gmail.com",
@@ -53,7 +53,7 @@ setup(
                       ],
     include_package_data=True, 
     url="https://github.com/pjamesjoyce/lcoptview/",
-    download_url="https://github.com/pjamesjoyce/lcoptview/archive/0.1.2.tar.gz",
+    download_url="https://github.com/pjamesjoyce/lcoptview/archive/0.1.3.tar.gz",
     long_description=open('README.md').read(),
     #description='Share your Lcopt results with a wider audience',
     keywords=['LCA', 'Life Cycle Assessment', 'Foreground system', 'Background system', 'Foreground model', 'Fully parameterised'],
