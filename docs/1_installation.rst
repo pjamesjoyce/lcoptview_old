@@ -11,12 +11,13 @@ Basic Installation
 Recommended Installation
 ------------------------
 
-The easiest way to install lcopt is via conda. This ensures the version of Python (3.6) is correct, all of the dependencies are correct and there are no conflicts.
-You can also do it in only 3 commands.
+The easiest way to install lcoptview is via conda. This ensures the version of Python (3.6) is correct, all of the dependencies are correct and there are no conflicts.
 
-1) Install miniconda (available here `https://conda.io/miniconda.html`)
+If you have conda installed, you can do it in one command.
 
-2) On the command line/console, create a new environment called lcoptview and install lcoptview with this command::
+If you don't, first install miniconda (available `here <https://conda.io/miniconda.html>`_)
+
+Then, on the command line/console, create a new environment called lcoptview and install lcoptview with this command::
 
     conda create -n lcoptview -c pjamesjoyce python=3.6 lcoptview
 
