@@ -14,7 +14,7 @@ Lcoptview allows you to view .lcoptview files in your web browser.
 
 .lcoptview files are created by lcopt to share data and results.
 
-`Lcopt <http://lcopt.rtfd.io>` is a python module for creating fully parameterised LCA foreground models using a Flask based interactive GUI developed by `James Joyce <https://pjamesjoyce.github.io/>`_.
+`Lcopt <http://lcopt.rtfd.io>`_ is a python module for creating fully parameterised LCA foreground models using a Flask based interactive GUI developed by `James Joyce <https://pjamesjoyce.github.io/>`_.
 
 .. toctree::
    :maxdepth: 1
