@@ -30,3 +30,11 @@ Launch lcoptview
 ```
 	lcoptview
 ```
+
+You'll see this dialog
+
+![lcoptview launcher](/img/launcher.jpg)
+
+Click on the button and choose an .lcoptview file.
+
+Your default browser will open up, and you can explore the model and results.
