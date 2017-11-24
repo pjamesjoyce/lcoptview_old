@@ -3,7 +3,8 @@ Lcoptview
 
 Share your Lcopt results with a wider audience
 
-Watch the video [here](http://lcoptview.rtfd.io)
+
+Watch the video and get full installation instructions [here](http://lcoptview.rtfd.io)
 
 Installation
 ------------------------
