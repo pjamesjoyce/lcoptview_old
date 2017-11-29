@@ -1,11 +1,18 @@
 // This function creates a new node from external data
-var newNodeExternal = function(name, type, id, x, y, instance, outputlabel){
+var newNodeExternal = function(name, type, id, x, y, ext_item_data, instance, outputlabel){
   
   if(outputlabel !== ''){instance.data.outputlabels[id] = outputlabel;}
   //console.log(outputlabel)
   //console.log(instance.data.outputlabels[id])
   //var id = id; //name.split(' ').join('_')//jsPlumbUtil.uuid();
-  var d = $('<div>').attr('id', id).addClass('w ' + type);
+  console.log(type)
+  var d;
+  if(type == 'input' || type == 'biosphere'){
+    d = $('<div data-toggle="popover" data-trigger="hover" title="'+name+'" data-content="'+ext_item_data+'" data-html="true">').attr('id', id).addClass('w ' + type);  
+  }else{
+    d = $('<div>').attr('id', id).addClass('w ' + type);
+  }
+    
   var title =  $('<div>').addClass('title').text(name);
 
   d.append(title);
@@ -15,6 +22,14 @@ var newNodeExternal = function(name, type, id, x, y, instance, outputlabel){
 
   d.css('left', x + "px");
   d.css('top', y + "px");
+
+  $('[data-toggle="popover"]').popover({
+    container: '#sandbox_container',
+    delay: {
+       show: "100",
+       hide: "100"
+    },
+  });
 
   return d;
 };

@@ -25,7 +25,8 @@
    var nodes = [];
 
    {% for node in args.nodes %}
-   nodes.push({'name':'{{node.name}}','type':'{{node.type}}','id':'{{node.id}}','initX':{{node.initX}},'initY':{{node.initY}}})
+   console.log("{{node.ext_item_data|safe}}");
+   nodes.push({'name':'{{node.name}}','type':'{{node.type}}','id':'{{node.id}}','initX':{{node.initX}},'initY':{{node.initY}}, 'ext_item_data': "{{node.ext_item_data|safe}}"})
    {% endfor %}
 
 
